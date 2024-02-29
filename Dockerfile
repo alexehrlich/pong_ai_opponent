@@ -6,4 +6,4 @@ COPY pong.py /app/pong.py
 
 WORKDIR /app
 
-ENTRYPOINT [ "python", "pong.py" ]
+#ENTRYPOINT [ "python", "pong.py" ]
