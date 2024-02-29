@@ -1,4 +1,5 @@
-import pygame
+while (1)
+""" import pygame
 import random
 
 # Initialize Pygame
@@ -122,3 +123,4 @@ while running:
     clock.tick(60)
 
 pygame.quit()
+ """
