@@ -1,11 +1,6 @@
 import pygame
 import random
 
-# Open a file in write mode ('w')
-with open('new_file.txt', 'w') as f:
-    # Write content to the file
-    f.write('Hello, this is a new file created using Python!')
-
 # Initialize Pygame
 pygame.init()
 
