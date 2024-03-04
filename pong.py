@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 # Initialize Pygame
 pygame.init()
@@ -12,70 +13,90 @@ pygame.display.set_caption("Pong")
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 225, 0)
 
 # Define the paddle class
 class Paddle:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.width = 10
-        self.height = 100
-        self.rect = pygame.Rect(x, y, self.width, self.height)
-        self.speed = 5
+	def __init__(self, x, y):
+		self.x = x
+		self.y = y
+		self.width = 10
+		self.height = 100
+		self.rect = pygame.Rect(x, y, self.width, self.height)
+		self.speed = 5
+		#self.refresh_timer = time.time()
 
-    def draw(self):
-        pygame.draw.rect(WIN, WHITE, self.rect)
+	def draw(self):
+		pygame.draw.rect(WIN, WHITE, self.rect)
 
-    def move_up(self):
-        self.y -= self.speed
-        self.rect.y = self.y
+	def move_up(self):
+		self.y -= self.speed
+		self.rect.y = self.y
 
-    def move_down(self):
-        self.y += self.speed
-        self.rect.y = self.y
+	def move_down(self):
+		self.y += self.speed
+		self.rect.y = self.y
 
 # Define the ball class
 class Ball:
-    def __init__(self):
-        self.reset()
+	def __init__(self):
+		self.reset()
 
-    def reset(self):
-        self.x = WIDTH // 2
-        self.y = HEIGHT // 2
-        self.size = 10
-        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
-        self.speed_x = 5 * random.choice((1, -1))
-        self.speed_y = 5 * random.choice((1, -1))
+	def reset(self):
+		self.x = WIDTH // 2
+		self.y = HEIGHT // 2
+		self.size = 10
+		self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
+		self.speed_x = 2 * random.choice((1, -1))
+		self.speed_y = 2 * random.choice((1, -1))
 
-    def draw(self):
-        pygame.draw.ellipse(WIN, WHITE, self.rect)
+	def draw(self):
+		pygame.draw.ellipse(WIN, WHITE, self.rect)
 
-    def move(self):
-        self.x += self.speed_x
-        self.y += self.speed_y
+	def move(self):
+		self.x += self.speed_x
+		self.y += self.speed_y
 
-        # Bounce off the top and bottom
-        if self.y <= 0 or self.y >= HEIGHT - self.size:
-            self.speed_y *= -1
+		# Bounce off the top and bottom
+		if self.y <= 0 or self.y >= HEIGHT - self.size:
+			self.speed_y *= -1
 
-        self.rect.x = self.x
-        self.rect.y = self.y
+		self.rect.x = self.x
+		self.rect.y = self.y
 
-    def bounce(self):
-        if self.rect.colliderect(player_paddle.rect) or self.rect.colliderect(ai_paddle.rect):
-            self.speed_x *= -1
+	def bounce(self):
+		if self.rect.colliderect(player_paddle.rect) or self.rect.colliderect(ai_paddle.rect):
+			self.speed_x *= -1
 
-# AI opponent with a 10% chance of winning
-def ai_move():
-    if random.random() < 0.1:
-        return random.choice(["up", "down"])
-    else:
-        if ball.rect.y < ai_paddle.rect.y + ai_paddle.height // 2:
-            return "up"
-        elif ball.rect.y > ai_paddle.rect.y + ai_paddle.height // 2:
-            return "down"
-        else:
-            return "stay"
+
+def predict_y_on_ai_paddleside():
+	kathete = (ball.speed_y/ball.speed_x) * (WIDTH - (WIDTH - ai_paddle.x) - ball.x)
+	if (ball.speed_y == 0):
+		return ball.y
+	y_virtual_hit = ball.y + kathete #can be negative depending on speed_y --> is dann subtracted correctly
+	if (y_virtual_hit < 0):
+		y_virtual_hit *= -1
+	if ((y_virtual_hit // HEIGHT) % 2 == 0):
+		return y_virtual_hit % HEIGHT
+	elif ((y_virtual_hit // HEIGHT) % 2 != 0):
+		return HEIGHT - (y_virtual_hit % HEIGHT)
+
+def predict_y_on_player_paddleside():
+	kathete = (abs(ball.speed_y/ball.speed_x)) * (ball.x - player_paddle.x - (player_paddle.width))
+	if (ball.speed_y == 0):
+		return ball.y
+	elif (ball.speed_y < 0):
+		y_virtual_hit = ball.y - kathete
+	else:
+		y_virtual_hit = ball.y + kathete
+	if (y_virtual_hit < 0):
+		y_virtual_hit *= -1
+	if ((y_virtual_hit // HEIGHT) % 2 == 0):
+		return y_virtual_hit % HEIGHT
+	elif ((y_virtual_hit // HEIGHT) % 2 != 0):
+		return HEIGHT - (y_virtual_hit % HEIGHT)
+
 
 # Create paddles and ball
 player_paddle = Paddle(20, HEIGHT // 2 - 50)
@@ -85,40 +106,54 @@ ball = Ball()
 # Game loop
 clock = pygame.time.Clock()
 running = True
+#ai_paddle.refresh_timer = time.time()
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			running = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w] and player_paddle.rect.y > 0:
-        player_paddle.move_up()
-    if keys[pygame.K_s] and player_paddle.rect.y < HEIGHT - player_paddle.height:
-        player_paddle.move_down()
+	keys = pygame.key.get_pressed()
+	if keys[pygame.K_w] and player_paddle.rect.y > 0:
+		player_paddle.move_up()
+	if keys[pygame.K_s] and player_paddle.rect.y < HEIGHT - player_paddle.height:
+		player_paddle.move_down()
 
-    # AI opponent
-    ai_decision = ai_move()
-    if ai_decision == "up" and ai_paddle.rect.y > 0:
-        ai_paddle.move_up()
-    elif ai_decision == "down" and ai_paddle.rect.y < HEIGHT - ai_paddle.height:
-        ai_paddle.move_down()
+	# AI opponent
+	predicted_y_ai = predict_y_on_ai_paddleside()
+	predicted_y_player = predict_y_on_player_paddleside()
+	#if (time.time() - ai_paddle.refresh_timer >= 1):
+	if (ball.speed_x > 0):
+		if ((ai_paddle.y + ai_paddle.height / 2 > predicted_y_ai) and (ai_paddle.y > 0)):
+			ai_paddle.move_up()
+		elif((ai_paddle.y + ai_paddle.height / 2 < predicted_y_ai) and (ai_paddle.y < HEIGHT - ai_paddle.height)):
+			ai_paddle.move_down()
+	else:
+		if (ai_paddle.y + ai_paddle.height / 2 > HEIGHT / 2):
+			ai_paddle.move_up()
+		else:
+			ai_paddle.move_down()
+	#ai_paddle.refresh_timer = time.time()
 
-    # Move ball
-    ball.move()
-    ball.bounce()
+	# Move ball
+	ball.move()
+	ball.bounce()
 
-    # Check for scoring
-    if ball.rect.x < 0 or ball.rect.x > WIDTH:
-        ball.reset()
+	# Check for scoring
+	if ball.rect.x < 0 or ball.rect.x > WIDTH:
+		ball.reset()
 
-    # Draw everything
-    WIN.fill(BLACK)
-    player_paddle.draw()
-    ai_paddle.draw()
-    ball.draw()
-    pygame.draw.aaline(WIN, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))  # Center line
-    pygame.display.update()
+	# Draw everything
+	WIN.fill(BLACK)
+	if (ball.speed_x > 0):
+		pygame.draw.rect(WIN, RED, (WIDTH - (WIDTH - ai_paddle.x) - ball.rect.width, predicted_y_ai, ball.rect.width, ball.rect.height))
+	if (ball.speed_x < 0):
+		pygame.draw.rect(WIN, YELLOW, (player_paddle.x + player_paddle.width, predicted_y_player, ball.rect.width, ball.rect.height))
+	player_paddle.draw()
+	ai_paddle.draw()
+	ball.draw()
+	pygame.draw.aaline(WIN, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))  # Center line
+	pygame.display.update()
 
-    clock.tick(60)
+	clock.tick(60)
 
 pygame.quit()
