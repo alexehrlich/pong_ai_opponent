@@ -1,6 +1,11 @@
 [NEAT]
+#Stop the NEAT-Generation algorithm when one genome has reached the max_threshold
 fitness_criterion     = max
+
+#In our Pong game the number of hits. When one genome was able to return the ball 400 times
 fitness_threshold     = 400
+
+#population size. Neat creates 50 different Gnomes (neural networks) with internal mutations
 pop_size              = 50
 reset_on_extinction   = False
 
@@ -14,7 +19,7 @@ elitism            = 2
 survival_threshold = 0.2
 
 [DefaultGenome]
-# node activation options
+# node activation functions of the different nodes
 activation_default      = relu
 activation_mutate_rate  = 1.0
 activation_options      = relu
@@ -45,16 +50,24 @@ conn_delete_prob        = 0.5
 enabled_default         = True
 enabled_mutate_rate     = 0.01
 
+# General neural network
 feed_forward            = True
+
+#Setup that every node is connected with every other node
 initial_connection      = full_direct
 
 # node add/remove rates
 node_add_prob           = 0.2
 node_delete_prob        = 0.2
 
-# network parameters
+# Sart setup for the NEAT Generation
+#randomly start with two hidden layers (arbitraty choice)
 num_hidden              = 2
+
+#Input layer of our PONG NN: AI_Paddle_Y, Ball_Y, X_Distance_Ball_AI_Paddle
 num_inputs              = 3
+
+#Output layer of our PONG NN: AI_Paddle_stay, AI_Paddle_up, AI_paddle_down
 num_outputs             = 3
 
 # node response options
