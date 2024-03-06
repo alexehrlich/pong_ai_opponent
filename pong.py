@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import math
 
 # Initialize Pygame
 pygame.init()
@@ -25,7 +26,7 @@ class Paddle:
 		self.height = 100
 		self.rect = pygame.Rect(x, y, self.width, self.height)
 		self.speed = 5
-		#self.refresh_timer = time.time()
+		self.refresh_timer = time.time()
 
 	def draw(self):
 		pygame.draw.rect(WIN, WHITE, self.rect)
@@ -48,8 +49,8 @@ class Ball:
 		self.y = HEIGHT // 2
 		self.size = 10
 		self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
-		self.speed_x = 2 * random.choice((1, -1))
-		self.speed_y = 2 * random.choice((1, -1))
+		self.speed_x = 4 * random.choice((1, -1))
+		self.speed_y = 4 * random.choice((1, -1))
 
 	def draw(self):
 		pygame.draw.ellipse(WIN, WHITE, self.rect)
@@ -65,8 +66,20 @@ class Ball:
 		self.rect.x = self.x
 		self.rect.y = self.y
 
-	def bounce(self):
-		if self.rect.colliderect(player_paddle.rect) or self.rect.colliderect(ai_paddle.rect):
+	def bounce(self, player_paddle, ai_paddle):
+		if self.rect.colliderect(player_paddle.rect):
+			self.speed_x *= -1
+
+			# Calculate the angle at which the ball hits the paddle
+			relative_intersect_y = (player_paddle.rect.centery - self.rect.centery) / (player_paddle.rect.height / 2)
+			bounce_angle = relative_intersect_y * (5 * math.pi / 12)  # Maximum angle for maximum bounce
+
+			# Calculate the new speed components
+			speed_magnitude = math.sqrt(self.speed_x ** 2 + self.speed_y ** 2)
+			self.speed_x = speed_magnitude * math.cos(bounce_angle)
+			self.speed_y = speed_magnitude * -math.sin(bounce_angle)
+
+		if self.rect.colliderect(ai_paddle.rect):
 			self.speed_x *= -1
 
 
@@ -106,7 +119,9 @@ ball = Ball()
 # Game loop
 clock = pygame.time.Clock()
 running = True
-#ai_paddle.refresh_timer = time.time()
+ai_paddle.refresh_timer = time.time()
+predicted_y_ai = predict_y_on_ai_paddleside()
+predicted_y_player = predict_y_on_player_paddleside()
 while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -119,9 +134,11 @@ while running:
 		player_paddle.move_down()
 
 	# AI opponent
-	predicted_y_ai = predict_y_on_ai_paddleside()
-	predicted_y_player = predict_y_on_player_paddleside()
-	#if (time.time() - ai_paddle.refresh_timer >= 1):
+	if (time.time() - ai_paddle.refresh_timer >= 1):
+		print("Recalculate...")
+		predicted_y_ai = predict_y_on_ai_paddleside()
+		predicted_y_player = predict_y_on_player_paddleside()
+		ai_paddle.refresh_timer = time.time()
 	if (ball.speed_x > 0):
 		if ((ai_paddle.y + ai_paddle.height / 2 > predicted_y_ai) and (ai_paddle.y > 0)):
 			ai_paddle.move_up()
@@ -132,11 +149,10 @@ while running:
 			ai_paddle.move_up()
 		else:
 			ai_paddle.move_down()
-	#ai_paddle.refresh_timer = time.time()
 
 	# Move ball
 	ball.move()
-	ball.bounce()
+	ball.bounce(player_paddle, ai_paddle)
 
 	# Check for scoring
 	if ball.rect.x < 0 or ball.rect.x > WIDTH:
