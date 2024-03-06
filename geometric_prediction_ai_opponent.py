@@ -132,6 +132,8 @@ while running:
 		player_paddle.move_up()
 	if keys[pygame.K_s] and player_paddle.rect.y < HEIGHT - player_paddle.height:
 		player_paddle.move_down()
+	
+	
 
 	# AI opponent
 	if (time.time() - ai_paddle.refresh_timer >= 1):
@@ -167,7 +169,7 @@ while running:
 	player_paddle.draw()
 	ai_paddle.draw()
 	ball.draw()
-	pygame.draw.aaline(WIN, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))  # Center line
+	pygame.draw.aaline(WIN, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT)) # Center line
 	pygame.display.update()
 
 	clock.tick(60)

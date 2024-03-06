@@ -3,6 +3,7 @@ from pong import Game
 import neat
 import os
 import pickle
+import time
 
 class PongGame:
 	def __init__(self, window, width, height):
@@ -16,6 +17,9 @@ class PongGame:
 
 		run = True
 		clock = pygame.time.Clock()
+		start_time = time.time()
+		output = ai.activate((self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
+		decision = output.index(max(output))
 		while run:
 			clock.tick(60) #max 60 frames per second
 
@@ -31,8 +35,10 @@ class PongGame:
 			if keys[pygame.K_s]:
 				self.game.move_paddle(left=True, up=False)
 			
-			output = ai.activate((self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
-			decision = output.index(max(output))
+			if (time.time() - start_time >= 1):
+				output = ai.activate((self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
+				decision = output.index(max(output))
+				start_time = time.time()
 
 			if (decision == 0):
 				pass

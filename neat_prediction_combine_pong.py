@@ -6,9 +6,6 @@ import pickle
 import time
 import sys
 
-TIME_CONSTRAINT = False
-TAKE_PREDICTON = False
-
 class PongGame:
 	def __init__(self, window, width, height):
 			self.game = Game(window, width, height) #must be the dimension of our game
@@ -35,7 +32,7 @@ class PongGame:
 		clock = pygame.time.Clock()
 		start_time = time.time()
 		decision = 0
-		predicted_y_ai = predicted_y_ai = self.predict_y_on_ai_paddleside()
+		predicted_y_ai = self.predict_y_on_ai_paddleside()
 		draw_prediction = False
 		while run:
 			clock.tick(60) #max 60 frames per second
@@ -52,7 +49,7 @@ class PongGame:
 			if keys[pygame.K_s]:
 				self.game.move_paddle(left=True, up=False)
 			
-			if (time.time() - start_time >= 1 or TIME_CONSTRAINT == False):
+			if (time.time() - start_time >= 1):
 				if (self.ball.x_vel < 0):
 					output = ai.activate(
 						(self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
@@ -196,15 +193,6 @@ def test_ai(config):
 	game.play(ai, config)
 
 if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		# The first argument (sys.argv[0]) is the script name itself
-		# Actual command-line arguments start from sys.argv[1]
-		arguments = sys.argv[1:]
-		if (sys.argv[1] == "On"):
-			TIME_CONSTRAINT = True
-		else:
-			TIME_CONSTRAINT = False
-
 	#load the neat configeration file for training
 	#get the directory of this current file
 	local_dir = os.path.dirname(__file__)
