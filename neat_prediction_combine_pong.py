@@ -34,6 +34,9 @@ class PongGame:
 		decision = 0
 		predicted_y_ai = self.predict_y_on_ai_paddleside()
 		draw_prediction = False
+		internal_ai_paddle_y = self.right_paddle.y #game state can be requested only once per second. Calculate the right_pddle internally after move to now where to go
+		paddle_step = self.right_paddle.VEL
+		internalBallXVel = self.ball.x_vel
 		while run:
 			clock.tick(60) #max 60 frames per second
 
@@ -50,23 +53,19 @@ class PongGame:
 				self.game.move_paddle(left=True, up=False)
 			
 			if (time.time() - start_time >= 1):
-				if (self.ball.x_vel < 0):
+				internalBallXVel = self.ball.x_vel
+				if (internalBallXVel < 0):
 					output = ai.activate(
 						(self.right_paddle.y, self.ball.y, abs(self.right_paddle.x - self.ball.x)))
 					decision = output.index(max(output))
 				else:
 					predicted_y_ai = self.predict_y_on_ai_paddleside()
+					internal_ai_paddle_y = self.right_paddle.y
 					self.game.prediction_x = self.game.window_width - (self.game.window_width  - self.right_paddle.x) - self.ball.RADIUS * 2
 					self.game.prediction_y = predicted_y_ai
-					if ((self.right_paddle.y + self.right_paddle.HEIGHT / 2 > predicted_y_ai) and (self.right_paddle.y > 0)):
-						decision =1
-					elif((self.right_paddle.y + self.right_paddle.HEIGHT / 2 < predicted_y_ai) and (self.right_paddle.y < self.game.window_height - self.right_paddle.HEIGHT)):
-						decision = 2
-					else:
-						decision = 0
 				start_time = time.time()
 
-			if (self.ball.x_vel < 0):
+			if (internalBallXVel < 0):
 				draw_prediction = False
 				if decision == 0:
 					pass
@@ -76,9 +75,11 @@ class PongGame:
 					self.game.move_paddle(left=False, up=False)
 			else:
 				draw_prediction = True
-				if ((self.right_paddle.y + self.right_paddle.HEIGHT / 2 > predicted_y_ai) and (self.right_paddle.y > 0)):
+				if ((internal_ai_paddle_y + self.right_paddle.HEIGHT / 2 > predicted_y_ai) and (internal_ai_paddle_y > 0)):
+					internal_ai_paddle_y -= paddle_step
 					self.game.move_paddle(left=False, up=True)
-				elif((self.right_paddle.y + self.right_paddle.HEIGHT / 2 < predicted_y_ai) and (self.right_paddle.y < self.game.window_height - self.right_paddle.HEIGHT)):
+				elif((internal_ai_paddle_y+ self.right_paddle.HEIGHT / 2 < predicted_y_ai) and (internal_ai_paddle_y < self.game.window_height - self.right_paddle.HEIGHT)):
+					internal_ai_paddle_y += paddle_step
 					self.game.move_paddle(left=False, up=False)
 				else:
 					pass
