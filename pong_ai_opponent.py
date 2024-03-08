@@ -1,6 +1,7 @@
 import neat
 import os
 import pickle
+import random
 
 W_WIDTH = 700
 W_HEIGT = 500
@@ -18,7 +19,7 @@ class AIPongOpponent:
 		return (neat.nn.FeedForwardNetwork.create(genome,config))
 
 	def __predict_y_on_ai_paddleside(self):
-		triangleHieght = (self.ballVelocityY/self.ballVelocityX) * (W_WIDTH - (W_WIDTH - self.paddleX) - self.ballX)
+		triangleHieght = (self.ballVelocityY/self.ballVelocityX) * (self.paddleX - self.ballX)
 		if (self.ballVelocityY == 0):
 			return self.ballY
 		y_virtual_hit = self.ballY + triangleHieght
@@ -58,7 +59,9 @@ class AIPongOpponent:
 		else:
 			self.paddleX = paddleX
 			self.paddleY = paddleY
-			self.geometricPredictedY = self.__predict_y_on_ai_paddleside()
+			randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
+			print(randomFactor)
+			self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):
 		# if (self.ballVelocityX < 0):

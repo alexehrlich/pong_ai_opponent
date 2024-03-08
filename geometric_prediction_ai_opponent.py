@@ -84,7 +84,7 @@ class Ball:
 
 
 def predict_y_on_ai_paddleside():
-	kathete = (ball.speed_y/ball.speed_x) * (WIDTH - (WIDTH - ai_paddle.x) - ball.x)
+	kathete = (ball.speed_y/ball.speed_x) * (ai_paddle.x - ball.x)
 	if (ball.speed_y == 0):
 		return ball.y
 	y_virtual_hit = ball.y + kathete #can be negative depending on speed_y --> is dann subtracted correctly
